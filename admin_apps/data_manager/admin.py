@@ -1,7 +1,7 @@
 __author__ = 'philipp'
 
 from django.contrib import admin
-from data_manager.models import Neuron, Experiment, Experimenter, Animal, MicroscopeSlide
+from data_manager.models import *
 
 
 class NeuronInline(admin.StackedInline):
@@ -19,7 +19,6 @@ class AnimalInline(admin.TabularInline):
     model = Animal
     extra = 0
     inlines = [MicroscopeSlideInline]
-
 
 
 class MicroscopeSlideAdmin(admin.ModelAdmin):
@@ -43,10 +42,52 @@ class ExperimentAdmin(admin.ModelAdmin):
     inlines = [AnimalInline]
 
 
+class UploadedFileAdmin(admin.ModelAdmin):
+    actions=['really_delete_selected']
+
+    def get_actions(self, request):
+        actions = super(UploadedFileAdmin, self).get_actions(request)
+        del actions['delete_selected']
+        return actions
+
+    def really_delete_selected(self, request, queryset):
+        for obj in queryset:
+            obj.delete()
+
+        if queryset.count() == 1:
+            message_bit = "1 uploaded file was"
+        else:
+            message_bit = "%s uploded files were" % queryset.count()
+        self.message_user(request, "%s successfully deleted." % message_bit)
+    really_delete_selected.short_description = "Delete selected entries"
+
+
+
+class FileFolderAdmin(admin.ModelAdmin):
+    actions=['really_delete_selected']
+
+    def get_actions(self, request):
+        actions = super(FileFolderAdmin, self).get_actions(request)
+        del actions['delete_selected']
+        return actions
+
+    def really_delete_selected(self, request, queryset):
+        for obj in queryset:
+            obj.delete()
+
+        if queryset.count() == 1:
+            message_bit = "1 folder was"
+        else:
+            message_bit = "%s folders were" % queryset.count()
+        self.message_user(request, "%s successfully deleted." % message_bit)
+    really_delete_selected.short_description = "Delete selected entries"
+
 
 admin.site.register(Experimenter, ExperimenterAdmin)
 admin.site.register(Experiment, ExperimentAdmin)
 admin.site.register(MicroscopeSlide, MicroscopeSlideAdmin)
 admin.site.register(Neuron)
+admin.site.register(FileFolder, FileFolderAdmin)
+admin.site.register(UploadedFile, UploadedFileAdmin)
 #admin.site.register(Animal, AnimalAdmin)
 

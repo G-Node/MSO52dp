@@ -1,6 +1,11 @@
+import hashlib, os
+
 from django.db import models
 from django_extensions.db.fields import UUIDField
+from django.core.files.storage import default_storage
+from django.conf import settings
 
+import utils
 
 """
 Short UUID-Doku:
@@ -30,10 +35,6 @@ class MicroscopeInfo(models.Model):
 
     class Meta:
         abstract = True
-
-
-class FileFolder(Identity):
-    checksum = models.CharField(max_length=64)
 
 
 class Experimenter(Identity):
@@ -102,23 +103,90 @@ class Neuron(Identity):
         return self.label
 
 
-class ImageStack(Identity, MicroscopeInfo):
+class FileFolder(Identity):
+    checksum = models.CharField(max_length=64)
+    path = models.CharField(max_length=256)
+
+    def save(self, *args, **kwargs):
+        super(FileFolder, self).save(*args, **kwargs)
+        hash = hashlib.sha1()
+        for file in self.uploadedfile_set.all():
+            hash.update(file.checksum)
+        self.checksum = hash.hexdigest()
+        self.path = os.path.join(utils.ROOT_FILEFOLDERS, self.uuid)
+        super(FileFolder, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        for file in self.uploadedfile_set.all():
+            file.delete()
+        os.rmdir(os.path.join(settings.MEDIA_ROOT, self.path))
+        super(FileFolder, self).delete(*args, **kwargs)
+
+    @property
+    def n_files(self):
+        return len(self.uploadedfile_set.all())
+
+    def __unicode__(self):
+        return "%s with %s files" %(self.path, self.n_files)
+
+
+class UploadedFile(models.Model):
+    file = models.FileField(upload_to=utils.get_upload_path)
+    filefolder = models.ForeignKey(FileFolder)
+    filesize = models.PositiveIntegerField(blank=True, null=True, editable=False)
+    checksum = models.CharField(max_length=32, blank=True, editable=False)
+
+    class Meta:
+        ordering = ['file']
+
+    def save(self, *args, **kwargs):
+        print "********************* in save *************************"
+        super(UploadedFile, self).save(*args, **kwargs)
+        f = default_storage.open(self.file, 'rb')
+        hash = hashlib.sha1()
+        if f.multiple_chunks():
+            for chunk in f.chunks():
+                hash.update(chunk)
+        else:
+            hash.update(f.read())
+        f.close()
+        self.checksum =  hash.hexdigest()
+        self.filesize = self.file.size
+        super(UploadedFile, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        print "********************* in delete *************************"
+        # You have to prepare what you need before delete the model
+        storage, path = self.file.storage, self.file.path
+        filefolder = self.filefolder
+        print filefolder.uploadedfile_set.all()
+        print filefolder.uuid
+        # Delete the model before the file
+        super(UploadedFile, self).delete(*args, **kwargs)
+        print filefolder
+        print filefolder.uploadedfile_set.all()
+        filefolder.save()
+        print filefolder.uploadedfile_set.all()
+        # Delete the file after the model
+        storage.delete(path)
+
+    def __unicode__(self):
+        filename = os.path.basename(self.file.name)
+        return filename
+
+
+class ImageStackFolder(FileFolder, MicroscopeInfo):
     label = models.CharField(max_length=64)
     microscope_slide = models.ForeignKey(MicroscopeSlide)
-    file_folder = models.ForeignKey(FileFolder)
     voxel_size_z = models.DecimalField('voxel z-size in nm', max_digits=7, decimal_places=2)
 
 
-class Image(Identity, MicroscopeInfo):
+class ImageFolder(FileFolder, MicroscopeInfo):
     microscope_slide = models.ForeignKey(MicroscopeSlide)
-    file_folder = models.ForeignKey(FileFolder)
 
 
-class Morphology(Identity):
+class MorphologyFolder(FileFolder):
     dye = models.CharField(max_length=64)
     experimental_method = models.TextField()
     reconstruction_method = models.TextField()
     neuron = models.ForeignKey(Neuron)
-    file_folder = models.ForeignKey(FileFolder)
-
-

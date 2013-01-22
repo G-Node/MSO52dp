@@ -5,7 +5,7 @@ REPOSITORY_ROOT = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/home/media/media.lawrence.com/media/"
 MEDIA_ROOT = os.path.abspath(os.path.join(PROJECT_ROOT, '../data_raw'))
-print MEDIA_ROOT
+
 # Django settings for admin_apps project.
 
 DEBUG = True
@@ -20,7 +20,7 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': os.path.join(MEDIA_ROOT, 'data_manager.sqlite'),  # Or path to database file if using sqlite3.
+        'NAME': os.path.join(MEDIA_ROOT, 'mso52dp_metadata.sqlite'),  # Or path to database file if using sqlite3.
         'USER': '',                      # Not used with sqlite3.
         'PASSWORD': '',                  # Not used with sqlite3.
         'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
