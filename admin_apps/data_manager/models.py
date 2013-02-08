@@ -29,8 +29,8 @@ class MicroscopeInfo(models.Model):
     gain = models.DecimalField(max_digits=5, decimal_places=2)
     laser_color = models.CharField(max_length=64)
     laser_config = models.CharField('e.g. gain/time/percentage', max_length=64)
-    voxel_size_x = models.DecimalField('voxel x-size in nm', max_digits=7, decimal_places=2)
-    voxel_size_y = models.DecimalField('voxel y-size in nm', max_digits=7, decimal_places=2)
+    voxel_size_x = models.DecimalField('x [nm] (voxel-size)', max_digits=7, decimal_places=2)
+    voxel_size_y = models.DecimalField('y [nm] (voxel-size)', max_digits=7, decimal_places=2)
 
 
     class Meta:
@@ -104,6 +104,7 @@ class Neuron(Identity):
 
 
 class FileFolder(Identity):
+    label = models.CharField(unique=True, max_length=64)
     checksum = models.CharField(max_length=64)
     path = models.CharField(max_length=256)
 
@@ -175,17 +176,23 @@ class UploadedFile(models.Model):
         return filename
 
 
-class ImageStackFolder(FileFolder, MicroscopeInfo):
+class Microscope(Identity):
     label = models.CharField(max_length=64)
+
+
+class MicroscopeImageStack(MicroscopeInfo):
+    label = models.CharField(max_length=64)
+    microscope = models.ForeignKey(Microscope)
     microscope_slide = models.ForeignKey(MicroscopeSlide)
-    voxel_size_z = models.DecimalField('voxel z-size in nm', max_digits=7, decimal_places=2)
+    voxel_size_z = models.DecimalField('z [nm] (voxel-size)', max_digits=7, decimal_places=2)
 
 
-class ImageFolder(FileFolder, MicroscopeInfo):
+class MicroscopeImage(FileFolder, MicroscopeInfo):
+    microscope = models.ForeignKey(Microscope)
     microscope_slide = models.ForeignKey(MicroscopeSlide)
 
 
-class MorphologyFolder(FileFolder):
+class Morphology(models.Model):
     dye = models.CharField(max_length=64)
     experimental_method = models.TextField()
     reconstruction_method = models.TextField()

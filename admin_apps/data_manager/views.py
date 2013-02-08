@@ -1,7 +1,7 @@
 # Create your views here.
 from django import http
 import json
-from django import forms as forms
+from django import forms
 from django.shortcuts import render_to_response
 from django.http import HttpResponse
 
@@ -58,6 +58,10 @@ def directupload(request):
         # display the form
         form = SimpleFileForm()
         return render_to_response(template)
+
+class UploadImageStack(forms.Form):
+    label = forms.CharField(max_length=64)
+    file = forms.FileField()
 
 def upload_imagestacks(request):
     pass

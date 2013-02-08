@@ -83,11 +83,17 @@ class FileFolderAdmin(admin.ModelAdmin):
     really_delete_selected.short_description = "Delete selected entries"
 
 
+class MicroscopeImageStackAdmin(admin.ModelAdmin):
+    fields = ('label', 'microscope', 'microscope_slide', 'lense', 'zoom', 'laser_color', 'gain', 'laser_config',
+        ('voxel_size_x', 'voxel_size_y', 'voxel_size_z'),
+        )
+
+
 admin.site.register(Experimenter, ExperimenterAdmin)
 admin.site.register(Experiment, ExperimentAdmin)
 admin.site.register(MicroscopeSlide, MicroscopeSlideAdmin)
 admin.site.register(Neuron)
 admin.site.register(FileFolder, FileFolderAdmin)
 admin.site.register(UploadedFile, UploadedFileAdmin)
+admin.site.register(MicroscopeImageStack, MicroscopeImageStackAdmin)
 #admin.site.register(Animal, AnimalAdmin)
-
