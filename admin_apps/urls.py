@@ -6,7 +6,7 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     # Examples:
-     url(r'^directupload/', 'data_manager.views.directupload', name='home'),
+     url(r'^directupload/', 'django_morphdepot.morphdepot.views.directupload', name='home'),
     # url(r'^mso52dp/', include('mso52dp.foo.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:
