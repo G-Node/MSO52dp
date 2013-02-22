@@ -60,7 +60,7 @@ MEDIA_URL = ''
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/home/media/media.lawrence.com/static/"
-STATIC_ROOT = ''
+STATIC_ROOT = '/home/philipp/Lesezeichen/MSO52dp/admin_apps/static'
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
@@ -106,7 +106,8 @@ MIDDLEWARE_CLASSES = (
 
 ROOT_URLCONF = 'admin_apps.urls'
 
-TEMPLATE_DIRS = ('/home/philipp/Sandkasten/Django/admin_apps/templates',)
+#TEMPLATE_DIRS = ('/home/philipp/Sandkasten/Django/admin_apps/templates',)
+TEMPLATE_DIRS = (os.path.join( PROJECT_ROOT, 'mytemplates'),)
 
 INSTALLED_APPS = (
     'django.contrib.auth',
